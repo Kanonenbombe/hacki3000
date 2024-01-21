@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Backdoor Controll Center</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .client {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .client strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .client input, .client button {
+            padding: 10px;
+            margin-right: 10px;
+        }
+        .response {
+            margin-top: 10px;
+            background: #e9e9e9;
+            padding: 10px;
+        }
+    </style>
+    <script type="text/javascript">
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('client_response', function(data) {
+            var responseArea = document.getElementById('response-' + data.client);
+            if(responseArea) {
+                responseArea.innerHTML = data.response;
+            }
+        });
+
+        function sendCommand(client) {
+            var command = document.getElementById('command-' + client).value;
+            socket.emit('send_command', {'client': client, 'command': command});
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Verbundene Clients</h1>
+        {% for client in clients %}
+        <div class="client">
+            <strong>Client {{ client[0] }}:{{ client[1] }}</strong>
+            <input type="text" id="command-{{ client[0] }}-{{ client[1] }}" placeholder="Enter command">
+            <button onclick="sendCommand('{{ client[0] }}-{{ client[1] }}')">Send Command</button>
+            <div class="response" id="response-{{ client[0] }}-{{ client[1] }}"></div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
